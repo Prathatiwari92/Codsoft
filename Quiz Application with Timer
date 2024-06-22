@@ -1,0 +1,99 @@
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class QuizApplication {
+    static class Question {
+        String question;
+        String[] options;
+        String correctAnswer;
+
+        Question(String question, String[] options, String correctAnswer) {
+            this.question = question;
+            this.options = options;
+            this.correctAnswer = correctAnswer;
+        }
+    }
+
+    static class QuizTimer {
+        private Timer timer;
+        private boolean timeUp;
+
+        public QuizTimer(int seconds) {
+            timer = new Timer();
+            timeUp = false;
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    timeUp = true;
+                    System.out.println("Time's up!");
+                }
+            }, seconds * 1000);
+        }
+
+        public boolean isTimeUp() {
+            return timeUp;
+        }
+
+        public void cancel() {
+            timer.cancel();
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        Question[] quiz = {
+            new Question("What is the capital of France?", new String[]{"A. Berlin", "B. Madrid", "C. Paris", "D. Rome"}, "C"),
+            new Question("What is 2 + 2?", new String[]{"A. 3", "B. 4", "C. 5", "D. 6"}, "B"),
+            new Question("What is the largest planet in our Solar System?", new String[]{"A. Earth", "B. Jupiter", "C. Mars", "D. Saturn"}, "B")
+        };
+
+        int score = 0;
+        StringBuilder results = new StringBuilder();
+
+        for (int i = 0; i < quiz.length; i++) {
+            Question q = quiz[i];
+            System.out.println("Question " + (i + 1) + ": " + q.question);
+            for (String option : q.options) {
+                System.out.println(option);
+            }
+
+            QuizTimer timer = new QuizTimer(10); // 10 seconds per question
+            String answer = null;
+
+            while (!timer.isTimeUp() && answer == null) {
+                System.out.print("Your answer (A/B/C/D): ");
+                answer = scanner.nextLine().trim().toUpperCase();
+
+                if (!answer.matches("[ABCD]")) {
+                    System.out.println("Invalid answer. Please enter A, B, C, or D.");
+                    answer = null;
+                }
+            }
+
+            timer.cancel();
+
+            if (timer.isTimeUp()) {
+                results.append("Question ").append(i + 1).append(": Time's up!\n");
+            } else if (answer.equals(q.correctAnswer)) {
+                System.out.println("Correct!");
+                score++;
+                results.append("Question ").append(i + 1).append(": Correct\n");
+            } else {
+                System.out.println("Incorrect.");
+                results.append("Question ").append(i + 1).append(": Incorrect\n");
+            }
+
+            results.append("Your Answer: ").append(answer != null ? answer : "No answer").append("\n");
+            results.append("Correct Answer: ").append(q.correctAnswer).append("\n\n");
+        }
+
+        System.out.println("\nQuiz Over!");
+        System.out.println("Your final score is: " + score + "/" + quiz.length);
+        System.out.println("\nSummary of your answers:");
+        System.out.println(results.toString());
+
+        scanner.close();
+    }
+}
